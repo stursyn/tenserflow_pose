@@ -4,6 +4,7 @@ from keras.layers import Input, Add, Dense, Activation, ZeroPadding2D, BatchNorm
 from tensorflow.keras.utils import plot_model
 from IPython.display import Image
 
+
 input_img = Input(shape=(64, 64, 1))
 # encoding
 x1 = Conv2D(32, (3, 3), activation='relu', padding='same')(input_img)
