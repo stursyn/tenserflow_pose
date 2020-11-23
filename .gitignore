@@ -1,2 +1,5 @@
 .idea
 .DS_Store
+dataset/mpii
+dataset/tfrecords_mpii
+.ipynb_checkpoints
