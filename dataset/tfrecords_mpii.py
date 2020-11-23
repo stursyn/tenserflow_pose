@@ -76,9 +76,9 @@ def genreate_tfexample(anno):
         'image/object/parts/v':
             tf.train.Feature(int64_list=tf.train.Int64List(value=list(map(int, v)))),
         'image/object/center/x':
-            tf.train.Feature(int64_list=tf.train.Int64List(value=[center[1]])),
+            tf.train.Feature(int64_list=tf.train.Int64List(value=[int(center[0])])),
         'image/object/center/y':
-            tf.train.Feature(int64_list=tf.train.Int64List(value=[center[2]])),
+            tf.train.Feature(int64_list=tf.train.Int64List(value=[int(center[1])])),
         'image/object/scale':
             tf.train.Feature(float_list=tf.train.FloatList(value=[scale])),
         'image/encoded':
