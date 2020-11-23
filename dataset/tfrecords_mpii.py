@@ -36,6 +36,8 @@ def _bytes_feature(value):
 def genreate_tfexample(anno):
     filename = anno['filename']
     filepath = anno['filepath']
+    scale = anno['scale']
+    center = anno['center']
     with open(filepath, 'rb') as image_file:
         content = image_file.read()
 
@@ -74,11 +76,11 @@ def genreate_tfexample(anno):
         'image/object/parts/v':
             tf.train.Feature(int64_list=tf.train.Int64List(value=list(map(int, v)))),
         'image/object/center/x':
-            tf.train.Feature(int64_list=tf.train.Int64List(value=[int(width / 2)])),
+            tf.train.Feature(int64_list=tf.train.Int64List(value=[center[1]])),
         'image/object/center/y':
-            tf.train.Feature(int64_list=tf.train.Int64List(value=[int(height / 2)])),
+            tf.train.Feature(int64_list=tf.train.Int64List(value=[center[2]])),
         'image/object/scale':
-            tf.train.Feature(float_list=tf.train.FloatList(value=[width * height])),
+            tf.train.Feature(float_list=tf.train.FloatList(value=[scale])),
         'image/encoded':
             _bytes_feature(content),
         'image/filename':
@@ -129,11 +131,15 @@ def parse_one_annotation(anno, image_dir):
     filename = anno['image']
     joints = anno['joints']
     joints_visibility = anno['joints_vis']
+    scale = anno['scale']
+    center = anno['center']
     annotation = {
         'filename': filename,
         'filepath': os.path.join(image_dir, filename),
         'joints_visibility': joints_visibility,
         'joints': joints,
+        'scale':scale,
+        'center':center
     }
     return annotation
 
