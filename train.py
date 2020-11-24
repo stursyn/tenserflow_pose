@@ -1,7 +1,7 @@
 import math
 import os
 from datetime import datetime
-
+import time
 import click
 import tensorflow as tf
 
@@ -247,5 +247,10 @@ if __name__ == "__main__":
     start_epoch = 1
     epochs = 100
 
+    tic = time.perf_counter()
     train(epochs, start_epoch, learning_rate, tensorboard_dir, None,
           num_heatmap, batch_size, train_tfrecords, val_tfrecords, '0.0.1')
+    toc = time.perf_counter()
+    print(f"Time for training {toc - tic:0.4f} seconds")
+    print(f"Time for training {(toc - tic)/60:0.4f} minutes")
+
