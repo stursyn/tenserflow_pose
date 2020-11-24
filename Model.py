@@ -58,3 +58,14 @@ from hourglass104 import HourglassUNetBottleneckNetwork
 model = HourglassUNetBottleneckNetwork((64, 64, 3), 4, 1, 16)
 plot_model(model, to_file='new_model_bottleneck.png', show_shapes=True, show_layer_names=True)
 
+# losses_train, losses_val = [], []
+#
+# with open('losses_train.txt', 'r') as filehandle:
+#     for line in filehandle:
+#         loss = line[:-1]
+#         losses_train.append(loss)
+# print(losses_train)
+# with open('losses_val.txt', 'r') as filehandle:
+#     for line in filehandle:
+#         loss = line[:-1]
+#         losses_val.append(loss)

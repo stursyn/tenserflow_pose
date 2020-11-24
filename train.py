@@ -97,7 +97,7 @@ class Trainer(object):
     def run(self, train_dist_dataset, val_dist_dataset):
         @tf.function
         def distributed_train_epoch(dataset):
-            tf.print('Start distributed traininng...')
+            # tf.print('Start distributed traininng...')
             total_loss = 0.0
             num_train_batches = 0.0
             for one_batch in dataset:
@@ -107,8 +107,8 @@ class Trainer(object):
                     tf.distribute.ReduceOp.SUM, per_replica_loss, axis=None)
                 total_loss += batch_loss
                 num_train_batches += 1
-                tf.print('Trained batch', num_train_batches, 'batch loss',
-                         batch_loss, 'epoch total loss', total_loss)
+                # tf.print('Trained batch', num_train_batches, 'batch loss',
+                #          batch_loss, 'epoch total loss', total_loss)
             return total_loss, num_train_batches
 
         @tf.function
@@ -121,8 +121,8 @@ class Trainer(object):
                 num_val_batches += 1
                 batch_loss = self.strategy.reduce(
                     tf.distribute.ReduceOp.SUM, per_replica_loss, axis=None)
-                tf.print('Validated batch', num_val_batches, 'batch loss',
-                         batch_loss)
+                # tf.print('Validated batch', num_val_batches, 'batch loss',
+                #          batch_loss)
                 if not tf.math.is_nan(batch_loss):
                     # TODO: Find out why the last validation batch loss become NaN
                     total_loss += batch_loss
@@ -134,6 +134,7 @@ class Trainer(object):
         summary_writer = tf.summary.create_file_writer(self.tensorboard_dir)
         summary_writer.set_as_default()
 
+        losses_train, losses_val = [], []
         for epoch in range(self.start_epoch, self.epochs + 1):
             tf.summary.experimental.set_step(epoch)
 
@@ -149,25 +150,33 @@ class Trainer(object):
             train_loss = train_total_loss / num_train_batches
             print('Epoch {} train loss {}'.format(epoch, train_loss))
             tf.summary.scalar('epoch train loss', train_loss)
+            losses_train.append(train_loss.numpy())
 
             val_total_loss, num_val_batches = distributed_val_epoch(
                 val_dist_dataset)
             val_loss = val_total_loss / num_val_batches
             print('Epoch {} val loss {}'.format(epoch, val_loss))
             tf.summary.scalar('epoch val loss', val_loss)
+            losses_val.append(val_loss.numpy())
 
             # save model when reach a new lowest validation loss
-            if val_loss < self.lowest_val_loss:
+            if val_loss < self.lowest_val_loss and epoch % 5 == 0:
                 self.save_model(epoch, val_loss)
                 self.lowest_val_loss = val_loss
             self.last_val_loss = val_loss
 
+        with open('losses_train.txt', 'w') as filehandle:
+            for loss in losses_train:
+                filehandle.write('%s\n' % loss)
+        with open('losses_val.txt', 'w') as filehandle:
+            for loss in losses_val:
+                filehandle.write('%s\n' % loss)
         return self.best_model
 
     def save_model(self, epoch, loss):
         model_name = './models/model-v{}-epoch-{}-loss-{:.4f}.h5'.format(
             self.version, epoch, loss)
-        self.model.save_weights(model_name)
+        self.model.save(model_name)
         self.best_model = model_name
         print("Model {} saved.".format(model_name))
 
@@ -236,7 +245,7 @@ if __name__ == "__main__":
     tensorboard_dir = './logs/'
     learning_rate = 0.0001
     start_epoch = 1
-    epochs = 2
+    epochs = 100
 
     train(epochs, start_epoch, learning_rate, tensorboard_dir, None,
           num_heatmap, batch_size, train_tfrecords, val_tfrecords, '0.0.1')
