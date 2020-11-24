@@ -14,8 +14,6 @@ from tensorflow.keras.layers import (
     BatchNormalization,
 )
 # from keras.models import Model
-from tensorflow.keras.utils import plot_model
-from IPython.display import Image
 
 # [1] Stacked Hourglass Networks for Human Pose Estimation
 
