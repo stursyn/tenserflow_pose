@@ -1,5 +1,8 @@
 .idea
+.idea/misc.xml
 .DS_Store
 dataset/mpii
 dataset/tfrecords_mpii
+dataset/tfrecords_mpii/*.tfrecords
 .ipynb_checkpoints
+logs
