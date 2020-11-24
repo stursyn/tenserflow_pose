@@ -163,7 +163,7 @@ def StackedHourglassNetwork(
     return tf.keras.Model(inputs, ys, name='stacked_hourglass')
 
 def HourglassUNetNetwork(
-        input_shape=(64, 64, 1), num_stack=4, num_residual=1,
+        input_shape, num_stack=4, num_residual=1,
         num_heatmap=16):
 
     # input_img = Input(shape=(64, 64, 1))

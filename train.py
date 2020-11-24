@@ -5,10 +5,10 @@ from datetime import datetime
 import click
 import tensorflow as tf
 
-from hourglass104 import StackedHourglassNetwork
+from hourglass104 import StackedHourglassNetwork, HourglassUNetNetwork
 from preprocess import Preprocessor
 
-IMAGE_SHAPE = (256, 256, 3)
+IMAGE_SHAPE = (64, 64, 3)
 HEATMAP_SIZE = (64, 64)
 
 
@@ -63,7 +63,7 @@ class Trainer(object):
         self.optimizer.learning_rate = self.current_learning_rate
 
     def compute_loss(self, labels, outputs):
-        loss = 0
+        loss = float(0.0)
         for output in outputs:
             # assign more weights to foreground pixels
             weights = tf.cast(labels > 0, dtype=tf.float32) * 81 + 1
@@ -208,7 +208,8 @@ def train(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint,
         val_dist_dataset = strategy.experimental_distribute_dataset(
             val_dataset)
 
-        model = StackedHourglassNetwork(IMAGE_SHAPE, 4, 1, num_heatmap)
+        # model = StackedHourglassNetwork(IMAGE_SHAPE, 4, 1, num_heatmap)
+        model = HourglassUNetNetwork(IMAGE_SHAPE, 4, 1, num_heatmap)
         if checkpoint and os.path.exists(checkpoint):
             model.load_weights(checkpoint)
 

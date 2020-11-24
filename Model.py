@@ -58,4 +58,8 @@ autoencoder.summary()
 plot_model(autoencoder, to_file='model.png', show_shapes=True, show_layer_names=True)
 Image("model.png")
 
-autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+# autoencoder.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+# TEST TEST
+# from hourglass104 import StackedHourglassNetwork, HourglassUNetNetwork
+# model = StackedHourglassNetwork((256, 256, 3), 4, 1, 16)
+# plot_model(model, to_file='model2.png', show_shapes=True, show_layer_names=True)
