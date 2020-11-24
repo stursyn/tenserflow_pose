@@ -7,12 +7,12 @@ import tensorflow_addons as tfa
 import math
 import cv2
 import numpy as np
-from hourglass104 import StackedHourglassNetwork
+from hourglass104 import StackedHourglassNetwork, HourglassUNetNetwork
 from preprocess import Preprocessor
 
 ### Load Model
-model = StackedHourglassNetwork(
-        input_shape=(256, 256, 3), num_stack=4, num_residual=1,
+model = HourglassUNetNetwork(
+        input_shape=(64, 64, 3), num_stack=4, num_residual=1,
         num_heatmap=16)
 
 ### Define Utils Functions
@@ -129,11 +129,11 @@ def draw_skeleton_on_image(image, keypoints, index=None):
 def predict(image_path):
     encoded = tf.io.read_file(image_path)
     image = tf.io.decode_jpeg(encoded)
-    inputs = tf.image.resize(image, (256, 256))
+    inputs = tf.image.resize(image, (64, 64))
     inputs = tf.cast(inputs, tf.float32) / 127.5 - 1
     inputs = tf.expand_dims(inputs, 0)
     outputs = model(inputs, training=False)
-    heatmap = tf.squeeze(outputs[-1], axis=0).numpy()
+    heatmap = tf.squeeze(outputs, axis=0).numpy()
     kp = extract_keypoints_from_heatmap(heatmap)
     return image, kp
 ### Inference

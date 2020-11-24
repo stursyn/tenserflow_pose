@@ -162,6 +162,55 @@ def StackedHourglassNetwork(
 
     return tf.keras.Model(inputs, ys, name='stacked_hourglass')
 
+def HourglassUNetBottleneckNetwork(
+        input_shape, num_stack=4, num_residual=1,
+        num_heatmap=16):
+
+    # input_img = Input(shape=(64, 64, 1))
+    input_img = Input(shape = input_shape)
+    # encoding
+    x1 = Conv2D(32, (3, 3), activation='relu', padding='same')(input_img)
+    m1 = MaxPooling2D((2, 2), padding='same')(x1)
+
+    x2 = Conv2D(32, (3, 3), activation='relu', padding='same')(m1)
+    m2 = MaxPooling2D((2, 2), padding='same')(x2)
+
+    x3 = Conv2D(32, (3, 3), activation='relu', padding='same')(m2)
+    m3 = MaxPooling2D((2, 2), padding='same')(x3)
+
+    x4 = Conv2D(32, (3, 3), activation='relu', padding='same')(m3)
+    encoded = MaxPooling2D((2, 2), padding='same')(x4)
+
+    # decoding
+
+    y0 = Conv2D(32, (3, 3), activation='relu', padding='same')(encoded)
+    u0 = UpSampling2D((2, 2))(y0)
+    x4 = BottleneckBlock(x4, 32, downsample=False)
+    # x4 = Conv2D(32, (3, 3), activation='relu', padding='same')(x4)
+    w = Add()([u0, x4])
+
+    y1 = Conv2D(32, (3, 3), activation='relu', padding='same')(w)
+    u1 = UpSampling2D((2, 2))(y1)
+    x3 = BottleneckBlock(x3, 32, downsample=False)
+    # x3 = Conv2D(32, (3, 3), activation='relu', padding='same')(x3)
+    w = Add()([u1, x3])
+
+    y2 = Conv2D(32, (3, 3), activation='relu', padding='same')(w)
+    u2 = UpSampling2D((2, 2))(y2)
+    x2 = BottleneckBlock(x2, 32, downsample=False)
+    # x2 = Conv2D(32, (3, 3), activation='relu', padding='same')(x2)
+    w = Add()([u2, x2])
+
+    y3 = Conv2D(32, (3, 3), activation='relu', padding='same')(w)
+    u3 = UpSampling2D((2, 2))(y3)
+    x1 = BottleneckBlock(x1, 32, downsample=False)
+    # x1 = Conv2D(32, (3, 3), activation='relu', padding='same')(x1)
+    w = Add()([u3, x1])
+
+    decoded = Conv2D(16, (3, 3), activation='sigmoid', padding='same')(w)
+    return tf.keras.Model(input_img, decoded, name='hourglass_unet_etwork')
+
+
 def HourglassUNetNetwork(
         input_shape, num_stack=4, num_residual=1,
         num_heatmap=16):
@@ -185,32 +234,23 @@ def HourglassUNetNetwork(
 
     y0 = Conv2D(32, (3, 3), activation='relu', padding='same')(encoded)
     u0 = UpSampling2D((2, 2))(y0)
-
     x4 = Conv2D(32, (3, 3), activation='relu', padding='same')(x4)
-
     w = Add()([u0, x4])
 
     y1 = Conv2D(32, (3, 3), activation='relu', padding='same')(w)
     u1 = UpSampling2D((2, 2))(y1)
-
     x3 = Conv2D(32, (3, 3), activation='relu', padding='same')(x3)
-
     w = Add()([u1, x3])
 
     y2 = Conv2D(32, (3, 3), activation='relu', padding='same')(w)
     u2 = UpSampling2D((2, 2))(y2)
-
     x2 = Conv2D(32, (3, 3), activation='relu', padding='same')(x2)
-
     w = Add()([u2, x2])
 
     y3 = Conv2D(32, (3, 3), activation='relu', padding='same')(w)
     u3 = UpSampling2D((2, 2))(y3)
-
     x1 = Conv2D(32, (3, 3), activation='relu', padding='same')(x1)
-
     w = Add()([u3, x1])
 
-    decoded = Conv2D(1, (3, 3), activation='sigmoid', padding='same')(w)
-
+    decoded = Conv2D(16, (3, 3), activation='sigmoid', padding='same')(w)
     return tf.keras.Model(input_img, decoded, name='hourglass_unet_etwork')
