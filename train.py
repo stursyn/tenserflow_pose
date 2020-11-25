@@ -1,11 +1,11 @@
 import math
 import os
 from datetime import datetime
-
+import time
 import click
 import tensorflow as tf
 
-from hourglass104 import StackedHourglassNetwork, HourglassUNetNetwork
+from hourglass104 import StackedHourglassNetwork, HourglassUNetNetwork, HourglassUNetBottleneckNetwork
 from preprocess import Preprocessor
 
 IMAGE_SHAPE = (64, 64, 3)
@@ -58,7 +58,7 @@ class Trainer(object):
         self.optimizer.learning_rate = self.current_learning_rate
 
     def lr_decay_step(self, epoch):
-        if epoch == 25 or epoch == 50 or epoch == 75:
+        if epoch % 25 == 0:
             self.current_learning_rate /= 10.0
         self.optimizer.learning_rate = self.current_learning_rate
 
@@ -218,7 +218,7 @@ def train(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint,
             val_dataset)
 
         # model = StackedHourglassNetwork(IMAGE_SHAPE, 4, 1, num_heatmap)
-        model = HourglassUNetNetwork(IMAGE_SHAPE, 4, 1, num_heatmap)
+        model = HourglassUNetBottleneckNetwork(IMAGE_SHAPE, 4, 1, num_heatmap)
         if checkpoint and os.path.exists(checkpoint):
             model.load_weights(checkpoint)
 
@@ -246,6 +246,10 @@ if __name__ == "__main__":
     learning_rate = 0.0001
     start_epoch = 1
     epochs = 100
-
+    tic = time.perf_counter()
     train(epochs, start_epoch, learning_rate, tensorboard_dir, None,
           num_heatmap, batch_size, train_tfrecords, val_tfrecords, '0.0.1')
+    toc = time.perf_counter()
+    print(f"Time for training {toc - tic:0.4f} seconds")
+    print(f"Time for training {(toc - tic) / 60:0.4f} minutes")
+    print(f"Time for training {(toc - tic)/3600:0.4f} hours")
