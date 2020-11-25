@@ -152,7 +152,7 @@ print('Start to parse annotations.')
 if not os.path.exists('./tfrecords_mpii'):
     os.makedirs('./tfrecords_mpii')
 
-with open('./mpii_human_pose_v1_u12_2/seiit_train_new.json') as train_json:#train
+with open('./mpii_human_pose_v1_u12_2/train.json') as train_json:#train     seiit_train_new
     train_annos = json.load(train_json)
     train_annotations = [
         parse_one_annotation(anno, './mpii/images/')
@@ -161,7 +161,7 @@ with open('./mpii_human_pose_v1_u12_2/seiit_train_new.json') as train_json:#trai
     print('First train annotation: ', train_annotations[0])
     del (train_annos)
 
-with open('./mpii_human_pose_v1_u12_2/seiit_valid_new.json') as val_json:#validation
+with open('./mpii_human_pose_v1_u12_2/validation.json') as val_json:#validation     seiit_valid_new
     val_annos = json.load(val_json)
     val_annotations = [
         parse_one_annotation(anno, './mpii/images/') for anno in val_annos

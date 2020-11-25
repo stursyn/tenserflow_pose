@@ -5,7 +5,7 @@ import time
 import click
 import tensorflow as tf
 
-from hourglass104 import StackedHourglassNetwork, HourglassUNetNetwork, HourglassUNetBottleneckNetwork
+from hourglass104 import HourglassUNetBottleneckNetwork
 from preprocess import Preprocessor
 
 IMAGE_SHAPE = (64, 64, 3)
@@ -49,7 +49,7 @@ class Trainer(object):
         will be reduced by a factor of 5 if there's no improvement over [max_patience] epochs
         """
         if self.patience_count >= self.max_patience:
-            self.current_learning_rate /= 10.0
+            self.current_learning_rate /= 2.0
             self.patience_count = 0
         elif self.last_val_loss == self.lowest_val_loss:
             self.patience_count = 0
@@ -58,20 +58,8 @@ class Trainer(object):
         self.optimizer.learning_rate = self.current_learning_rate
 
     def lr_decay_step(self, epoch):
-        if self.epochs == 5:
-            if epoch == 1: # 25
-                self.current_learning_rate = 2.5e-4
-            elif epoch == 3: # 50
-                self.current_learning_rate = 6.3e-5
-            elif epoch == 4: # 75
-                self.current_learning_rate = 1.e-5
-        else:
-            if epoch == 25:
-                self.current_learning_rate = 1.e-5
-            elif epoch == 50:
-                self.current_learning_rate = 6.3e-5
-            elif epoch == 75:
-                self.current_learning_rate = 2.5e-4
+        if epoch % 20 == 0:
+            self.current_learning_rate /= 2
         self.optimizer.learning_rate = self.current_learning_rate
 
     def compute_loss(self, labels, outputs):
@@ -172,7 +160,7 @@ class Trainer(object):
             losses_val.append(val_loss.numpy())
 
             # save model when reach a new lowest validation loss
-            if val_loss < self.lowest_val_loss and epoch % 5 == 0:
+            if val_loss < self.lowest_val_loss and epoch % 10 == 0:
                 self.save_model(epoch, val_loss)
                 self.lowest_val_loss = val_loss
             self.last_val_loss = val_loss
@@ -229,7 +217,6 @@ def train(epochs, start_epoch, learning_rate, tensorboard_dir, checkpoint,
         val_dist_dataset = strategy.experimental_distribute_dataset(
             val_dataset)
 
-        # model = StackedHourglassNetwork(IMAGE_SHAPE, 4, 1, num_heatmap)
         model = HourglassUNetBottleneckNetwork(IMAGE_SHAPE, 4, 1, num_heatmap)
         if checkpoint and os.path.exists(checkpoint):
             model.load_weights(checkpoint)
@@ -257,7 +244,7 @@ if __name__ == "__main__":
     tensorboard_dir = './logs/'
     learning_rate = 2.5e-4#0.0001
     start_epoch = 1
-    epochs = 5
+    epochs = 100
     tic = time.perf_counter()
     train(epochs, start_epoch, learning_rate, tensorboard_dir, None,
           num_heatmap, batch_size, train_tfrecords, val_tfrecords, '0.0.1')
