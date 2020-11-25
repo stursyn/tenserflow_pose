@@ -58,8 +58,20 @@ class Trainer(object):
         self.optimizer.learning_rate = self.current_learning_rate
 
     def lr_decay_step(self, epoch):
-        if epoch % 25 == 0:
-            self.current_learning_rate /= 10.0
+        if self.epochs == 5:
+            if epoch == 1: # 25
+                self.current_learning_rate = 2.5e-4
+            elif epoch == 3: # 50
+                self.current_learning_rate = 6.3e-5
+            elif epoch == 4: # 75
+                self.current_learning_rate = 1.e-5
+        else:
+            if epoch == 25:
+                self.current_learning_rate = 1.e-5
+            elif epoch == 50:
+                self.current_learning_rate = 6.3e-5
+            elif epoch == 75:
+                self.current_learning_rate = 2.5e-4
         self.optimizer.learning_rate = self.current_learning_rate
 
     def compute_loss(self, labels, outputs):
@@ -138,7 +150,7 @@ class Trainer(object):
         for epoch in range(self.start_epoch, self.epochs + 1):
             tf.summary.experimental.set_step(epoch)
 
-            self.lr_decay()
+            self.lr_decay_step(epoch)
             tf.summary.scalar('epoch learning rate',
                               self.current_learning_rate)
 
@@ -243,13 +255,11 @@ if __name__ == "__main__":
     batch_size = 16
     num_heatmap = 16
     tensorboard_dir = './logs/'
-    learning_rate = 0.0001
+    learning_rate = 2.5e-4#0.0001
     start_epoch = 1
-    epochs = 100
+    epochs = 5
     tic = time.perf_counter()
     train(epochs, start_epoch, learning_rate, tensorboard_dir, None,
           num_heatmap, batch_size, train_tfrecords, val_tfrecords, '0.0.1')
     toc = time.perf_counter()
     print(f"Time for training {toc - tic:0.4f} seconds")
-    print(f"Time for training {(toc - tic) / 60:0.4f} minutes")
-    print(f"Time for training {(toc - tic)/3600:0.4f} hours")
